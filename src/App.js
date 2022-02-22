@@ -1,19 +1,42 @@
-import logo from './logo.svg';
 import './App.css';
 import { getCrafts, getItemsByType } from './tarkov-service';
-import gql from 'graphql-tag';
 import { useEffect, useState } from 'react';
-import { toArray } from 'iter-ops';
 import { ItemType } from './types';
+import medsConfig from './data/meds.json';
 
 function App() {
-  const [list, setList] = useState([]);
+  const [medsForHealth, setMedsForHealth] = useState([]);
+  const [medsForLightBleed, setMedsForLightBleed] = useState([]);
+
   useEffect(() => {
     const fetchData = async () => {
-      const meds = await getItemsByType(ItemType.meds);
-      
-      setList(
-        meds.filter(i => !i.types.includes(ItemType.injectors))   
+      const allMeds = await getItemsByType(ItemType.meds);
+
+      const relevantMeds = allMeds
+        .filter(i => medsConfig[i.id])
+        .map(i => ({
+          ...i,
+          ...medsConfig[i.id],
+        }));
+     
+      setMedsForHealth(
+        relevantMeds
+        .filter(i => i.healsHealth)
+        .map(i => ({
+          ...i,
+          costPerHeal: (i.lastLowPrice / i.maxPoints)
+        }))
+        .sort((a, b) => a.costPerHeal - b.costPerHeal)
+      );
+
+      setMedsForLightBleed(
+        relevantMeds
+        .filter(i => i.healsLightBleed)
+        .map(i => ({
+          ...i,
+          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.lightBleedPoints))
+        }))
+        .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );
     };
 
@@ -23,7 +46,27 @@ function App() {
 
   return (
     <div className="App">
-    {list.map(item => <div key={item.id}>{item.id}: {item.name} - {item.shortName}</div>)}
+      <h2>Meds</h2>
+
+      <h3>Best for Healing (After Raid heal is ₽30/health)</h3>
+      <div className="item-comparison-table">
+      {medsForHealth.map(item =>
+        <div className={"item " + (item.costPerHeal > 30 ? "item--bad" : "item--good")} key={item.id}>
+          <div className="item-title">{item.name}</div>
+          <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
+        </div>
+      )}
+      </div>
+
+      <h3>Best for Healing Light Bleeds</h3>
+      <div className="item-comparison-table">
+      {medsForLightBleed.map(item =>
+        <div className={"item " + (item.costPerHeal > 400 ? "item--bad" : "item--good")} key={item.id}>
+          <div className="item-title">{item.name}</div>
+          <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
+        </div>
+      )}
+      </div>
     </div>
   );
 }
