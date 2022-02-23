@@ -7,6 +7,8 @@ import medsConfig from './data/meds.json';
 function App() {
   const [medsForHealth, setMedsForHealth] = useState([]);
   const [medsForLightBleed, setMedsForLightBleed] = useState([]);
+  const [medsForHeavyBleed, setMedsForHeavyBleed] = useState([]);
+  const [medsForFractures, setMedsForFractures] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,6 +40,26 @@ function App() {
         }))
         .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );
+
+      setMedsForHeavyBleed(
+        relevantMeds
+        .filter(i => i.healsHeavyBleed)
+        .map(i => ({
+          ...i,
+          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.heavyBleedPoints))
+        }))
+        .sort((a, b) => a.costPerHeal - b.costPerHeal)
+      );
+
+      setMedsForFractures(
+        relevantMeds
+        .filter(i => i.healsFracture)
+        .map(i => ({
+          ...i,
+          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.fracturePoints))
+        }))
+        .sort((a, b) => a.costPerHeal - b.costPerHeal)
+      );
     };
 
     fetchData()
@@ -61,7 +83,27 @@ function App() {
       <h3>Best for Healing Light Bleeds</h3>
       <div className="item-comparison-table">
       {medsForLightBleed.map(item =>
-        <div className={"item " + (item.costPerHeal > 400 ? "item--bad" : "item--good")} key={item.id}>
+        <div className={"item " + (item.costPerHeal > 440 ? "item--bad" : "item--good")} key={item.id}>
+          <div className="item-title">{item.name}</div>
+          <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
+        </div>
+      )}
+      </div>
+
+      <h3>Best for Healing Heavy Bleeds</h3>
+      <div className="item-comparison-table">
+      {medsForHeavyBleed.map(item =>
+        <div className={"item " + (item.costPerHeal > 1320 ? "item--bad" : "item--good")} key={item.id}>
+          <div className="item-title">{item.name}</div>
+          <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
+        </div>
+      )}
+      </div>
+
+      <h3>Best for Healing Fractures</h3>
+      <div className="item-comparison-table">
+      {medsForFractures.map(item =>
+        <div className={"item " + (item.costPerHeal > 1100 ? "item--bad" : "item--good")} key={item.id}>
           <div className="item-title">{item.name}</div>
           <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
         </div>
