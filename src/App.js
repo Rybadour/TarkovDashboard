@@ -73,7 +73,7 @@ function App() {
       <h3>Best for Healing (After Raid heal is ₽30/health)</h3>
       <div className="item-comparison-table">
       {medsForHealth.map(item =>
-        <div className={"item " + (item.costPerHeal > 30 ? "item--bad" : "item--good")} key={item.id}>
+        <div className={"item " + (item.costPerHeal > 33 ? "item--bad" : "item--good")} key={item.id}>
           <div className="item-title">{item.name}</div>
           <div className="item-cost-compare">₽{item.costPerHeal.toFixed(1).toLocaleString()}</div>
         </div>
