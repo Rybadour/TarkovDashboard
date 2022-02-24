@@ -1,5 +1,5 @@
 import './App.css';
-import { getCrafts, getItemsByType } from './tarkov-service';
+import { getCrafts, getItemsByType } from './services/tarkov-service';
 import { useEffect, useState } from 'react';
 import { ItemType } from './types';
 import medsConfig from './data/meds.json';

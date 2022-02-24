@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Item, ItemType } from "./types";
+import { Craft, Item, ItemType } from "../types";
 
 const API = 'https://tarkov-tools.com/graphql';
 const itemFields = "id name shortName iconLink wikiLink types avg24hPrice lastLowPrice"
@@ -15,10 +15,10 @@ export function getItemsByType(itemType: ItemType): Promise<Item[]> {
 	})
 }
 
-export function getCrafts() {
+export function getCrafts(): Promise<Craft[]> {
 	return getData(`{
 		crafts {
-			source duration
+			source duration requiredItems rewardItems
 		}
 	}`)
 	.then((response) => {
