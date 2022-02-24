@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Item, ItemType } from "./types";
+import { Craft, Item, ItemType } from "../types";
 
 const API = 'https://tarkov-tools.com/graphql';
 
@@ -7,7 +7,7 @@ export function getItemsByType(itemType: ItemType): Promise<Item[]> {
 	return getData('itemsByType', [
 		'id', 'name', 'shortName', 'iconLink', 'wikiLink', 'types',
 		'avg24hPrice', 'lastLowPrice'
-	]);
+	], 'type: ' + itemType);
 }
 
 export function refreshCache() {
@@ -27,15 +27,16 @@ export async function cacheAllItemCosts() {
 export async function ensureStaticDataLoaded() {
 	if (localStorage.getItem('recipes')) return;
 
-	const crafts = await getData('crafts', ['source', 'duration', 'requiredItems', 'rewardItems']);
+	const crafts: Craft[] = await getData('crafts', ['source', 'duration', 'requiredItems', 'rewardItems']);
 	const barters = await getData('barters', ['source', 'requiredItems', 'rewardItems']);
 
 	const recipes = {};
 }
 
-function getData(operation: string, fields: string[]) {
+function getData(operation: string, fields: string[], queryParams: string = '') {
+	const paramSection = queryParams === '' ? '' : `(${queryParams})`;
 	const query = `{
-		${operation} {
+		${operation}${paramSection} {
 			${fields.join(' ')}
 		}
 	}`;
@@ -44,5 +45,7 @@ function getData(operation: string, fields: string[]) {
 		headers: {
 			"Content-Type": 'application/json'
 		}
-	}).then((response) => response.data.data[operation]);
+	}).then((response) => {
+		return response.data.data[operation]
+	});
 }
