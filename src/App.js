@@ -1,8 +1,11 @@
 import './App.css';
-import { getCrafts, getItemsByType } from './tarkov-service';
+import { cacheAllItemCosts, getItemsByType } from './tarkov-service';
 import { useEffect, useState } from 'react';
 import { ItemType } from './types';
 import medsConfig from './data/meds.json';
+
+cacheAllItemCosts();
+
 
 function App() {
   const [medsForHealth, setMedsForHealth] = useState([]);

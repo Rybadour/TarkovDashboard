@@ -6,6 +6,7 @@ export type Item = {
 }
 
 export enum ItemType {
+	any = 'any',
 	meds = 'meds',
 	injectors = 'injectors',
 };
