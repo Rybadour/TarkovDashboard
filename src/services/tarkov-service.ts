@@ -1,12 +1,24 @@
 import axios from "axios";
-import { Craft, Item, ItemType } from "../types";
+import { last } from "iter-ops";
+import { rootCertificates } from "tls";
+import { Barter, Craft, Item, ItemType, ProcessedItem, Recipe } from "../types";
 
 const API = 'https://tarkov-tools.com/graphql';
+const containedItemQuery = `{
+	item {
+		id
+	}
+	count
+	quantity
+}`;
+let recipes: Recipe[] = [];
+let recipesByItemId: Record<string, Recipe[]> = {};
+let itemsById: Record<string, Item> = {};
 
 export function getItemsByType(itemType: ItemType): Promise<Item[]> {
 	return getData('itemsByType', [
 		'id', 'name', 'shortName', 'iconLink', 'wikiLink', 'types',
-		'avg24hPrice', 'lastLowPrice'
+		'avg24hPrice', 'lastLowPrice', 'buyFor { source price }'
 	], 'type: ' + itemType);
 }
 
@@ -16,21 +28,83 @@ export function refreshCache() {
 }
 
 export async function cacheAllItemCosts() {
-	if (localStorage.getItem('allItems')) return;
-
-	const items = await getItemsByType(ItemType.any);
-	localStorage.setItem('allItems', JSON.stringify(
-		items
-	));
+	itemsById = await ensureData('allItems', async () => {
+		const items = await getItemsByType(ItemType.any);
+		return processAllItems(items);
+	});
 };
 
 export async function ensureStaticDataLoaded() {
-	if (localStorage.getItem('recipes')) return;
+	recipes = await ensureData('recipes', async () => {
+		const crafts: Craft[] = await getData('crafts', ['source', 'duration', `requiredItems ${containedItemQuery}`, `rewardItems ${containedItemQuery}`]);
+		const barters:Barter[] = await getData('barters', ['source', `requiredItems ${containedItemQuery}`, `rewardItems ${containedItemQuery}`]);
 
-	const crafts: Craft[] = await getData('crafts', ['source', 'duration', 'requiredItems', 'rewardItems']);
-	const barters = await getData('barters', ['source', 'requiredItems', 'rewardItems']);
+		return crafts.map((c) => ({
+			...c,
+			isCraft: true,
+			lowestCost: 0,
+		}))
+		.concat(barters.map(b => ({
+			...b,
+			duration: 0,
+			isCraft: false,
+			lowestCost: 0,
+		})));
+	});
 
-	const recipes = {};
+	recipesByItemId = await ensureData('recipesByItemId', async () => {
+		const recipesByItemId: Record<string, Recipe[]> = {};
+		recipes.forEach((r, i) => {
+			r.rewardItems.forEach((ri) => {
+				if (!recipesByItemId.hasOwnProperty(ri.item.id)) {
+					recipesByItemId[ri.item.id] = [];
+				}
+
+				recipesByItemId[ri.item.id].push(r);
+			})
+		});
+		return recipesByItemId; 
+	});
+}
+
+function processAllItems(items: Item[]) {
+	let unprocessedItems = items;
+	const itemsById: Record<string, ProcessedItem> = {};
+
+	let lastCount = 0;
+	while (unprocessedItems.length > 0 && lastCount != unprocessedItems.length)
+	{
+		lastCount = unprocessedItems.length;
+		unprocessedItems = unprocessedItems.filter(ui => {
+			let lowestCost = 0;
+			let lowestRecipe = null;
+			if (recipesByItemId.hasOwnProperty(ui.id)) {
+				recipesByItemId[ui.id].forEach(recipe => {
+					if (recipe.lowestCost == 0) {
+						
+					}
+				});
+			}
+
+		});
+	}
+
+	return itemsById;
+}
+
+async function ensureData<T>(storageKey: string, dataRetrieval: () => Promise<T>): Promise<T> {
+	const cachedJson = localStorage.getItem(storageKey);
+	if (cachedJson) {
+		try {
+			return JSON.parse(cachedJson);
+		} catch (err) {
+			//noop
+		}
+	}
+
+	const data = await dataRetrieval();
+	localStorage.setItem(storageKey, JSON.stringify(data));
+	return data;
 }
 
 function getData(operation: string, fields: string[], queryParams: string = '') {

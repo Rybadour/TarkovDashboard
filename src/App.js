@@ -1,9 +1,10 @@
 import './App.css';
-import { cacheAllItemCosts, getItemsByType } from './services/tarkov-service';
+import { cacheAllItemCosts, ensureStaticDataLoaded, getItemsByType } from './services/tarkov-service';
 import { useEffect, useState } from 'react';
 import { ItemType } from './types';
 import medsConfig from './data/meds.json';
 
+ensureStaticDataLoaded();
 cacheAllItemCosts();
 
 
