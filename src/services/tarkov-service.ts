@@ -1,7 +1,7 @@
 import axios from "axios";
 import { last } from "iter-ops";
 import { rootCertificates } from "tls";
-import { Barter, Craft, Item, ItemType, ProcessedItem, Recipe } from "../types";
+import { Barter, Craft, Item, ItemType, ProcessedItem, ProcessedRecipe, Recipe } from "../types";
 
 const API = 'https://tarkov-tools.com/graphql';
 const containedItemQuery = `{
@@ -17,8 +17,8 @@ let itemsById: Record<string, Item> = {};
 
 export function getItemsByType(itemType: ItemType): Promise<Item[]> {
 	return getData('itemsByType', [
-		'id', 'name', 'shortName', 'iconLink', 'wikiLink', 'types',
-		'avg24hPrice', 'lastLowPrice', 'buyFor { source price }'
+		'id', 'name', 'shortName', 'iconLink', 'wikiLink', 'types', 'low24hPrice',
+		'avg24hPrice', 'lastLowPrice', 'buyFor { source price }', 'sellFor { source price }'
 	], 'type: ' + itemType);
 }
 
@@ -32,6 +32,29 @@ export async function cacheAllItemCosts() {
 		const items = await getItemsByType(ItemType.any);
 		return processAllItems(items);
 	});
+};
+
+export async function getCraftsByHideoutModule(completedHideout: string[]): Promise<Record<string, ProcessedRecipe[]>> {
+	const crafts = recipes.filter(r => r.isCraft && completedHideout.includes(r.source));
+	const craftsByHideout: Record<string, ProcessedRecipe[]> = {};
+	crafts.forEach((craft) => {
+		const processed: ProcessedRecipe = {
+			...craft,
+			productName: itemsById[craft.rewardItems[0].item.id].name,
+			fleaCost: craft.requiredItems.reduce((acc, ri) => acc + itemsById[ri.item.id].avg24hPrice * ri.quantity, 0),
+			fleaSell: craft.rewardItems.reduce((acc, ri) => acc + itemsById[ri.item.id].avg24hPrice * ri.quantity, 0),
+			fleaSellFee: 0,
+			traderSell: 0,
+			traderName: "",
+		};
+
+		const hideoutMod = craft.source.replace(/ level \d/, '');
+		if (!craftsByHideout[hideoutMod]) {
+			craftsByHideout[hideoutMod] = [];
+		}
+		craftsByHideout[hideoutMod].push(processed);
+	});
+	return craftsByHideout;
 };
 
 export async function ensureStaticDataLoaded() {
@@ -68,9 +91,13 @@ export async function ensureStaticDataLoaded() {
 }
 
 function processAllItems(items: Item[]) {
-	let unprocessedItems = items;
+	//let unprocessedItems = items;
 	const itemsById: Record<string, ProcessedItem> = {};
+	items.forEach(i => {
+		itemsById[i.id] = {...i, lowestValue: 0};
+	})
 
+	/* *
 	let lastCount = 0;
 	while (unprocessedItems.length > 0 && lastCount != unprocessedItems.length)
 	{
@@ -88,6 +115,7 @@ function processAllItems(items: Item[]) {
 
 		});
 	}
+	/* */
 
 	return itemsById;
 }

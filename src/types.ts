@@ -4,7 +4,14 @@ export type Item = {
 	name: string;
 	shortName: string;
 	types: ItemType[];
+	lastLowPrice: number;
+	low24hPrice: number;
+	avg24hPrice: number;
 	buyFor: {
+		source: string;
+		price: number;
+	}[]
+	sellFor: {
 		source: string;
 		price: number;
 	}[]
@@ -43,5 +50,26 @@ export type Recipe = Craft & {
 
 export type ProcessedItem = Item & {
 	lowestValue: number;
-	lowestValueRecipe: Recipe;
+	lowestValueRecipe?: Recipe;
+};
+
+export type ProcessedRecipe = Recipe & {
+	productName: string;
+	fleaSell: number;
+	fleaSellFee: number;
+	fleaCost: number;
+	traderSell: number;
+	traderName: string;
+};
+
+export type MedConfig = {
+	name: string;
+	maxPoints: number;
+	healsHealth: boolean;
+	healsLightBleed: boolean;
+	lightBleedPoints: number;
+	healsHeavyBleed: boolean;
+	heavyBleedPoints: number;
+	healsFracture: boolean;
+	fracturePoints: number;
 };
