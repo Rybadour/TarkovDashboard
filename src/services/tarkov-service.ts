@@ -1,48 +1,28 @@
-import axios from "axios";
-import { last } from "iter-ops";
-import { rootCertificates } from "tls";
-import { Barter, Craft, Item, ItemType, ProcessedItem, ProcessedRecipe, Recipe } from "../types";
+import { Item, ProcessedItem, ProcessedRecipe } from "../types";
+import { cacheAllItemCosts, ensureStaticDataLoaded, getItem, getRecipes } from "./tarkov-tools.service";
+import { getCompletedHideout } from "./tarkov-tracker.service";
 
-const API = 'https://tarkov-tools.com/graphql';
-const containedItemQuery = `{
-	item {
-		id
-	}
-	count
-	quantity
-}`;
-let recipes: Recipe[] = [];
-let recipesByItemId: Record<string, Recipe[]> = {};
-let itemsById: Record<string, Item> = {};
+let completedHideout: string[];
 
-export function getItemsByType(itemType: ItemType): Promise<Item[]> {
-	return getData('itemsByType', [
-		'id', 'name', 'shortName', 'iconLink', 'wikiLink', 'types', 'low24hPrice',
-		'avg24hPrice', 'lastLowPrice', 'buyFor { source price }', 'sellFor { source price }'
-	], 'type: ' + itemType);
+const processedItems: Record<string, ProcessedItem> = {};
+
+export async function buildCache() {
+  ensureStaticDataLoaded();
+  cacheAllItemCosts();
+  completedHideout = await getCompletedHideout();
 }
 
-export function refreshCache() {
-	localStorage.removeItem('allItems');
-	cacheAllItemCosts();
-}
-
-export async function cacheAllItemCosts() {
-	itemsById = await ensureData('allItems', async () => {
-		const items = await getItemsByType(ItemType.any);
-		return processAllItems(items);
-	});
-};
-
-export async function getCraftsByHideoutModule(completedHideout: string[]): Promise<Record<string, ProcessedRecipe[]>> {
-	const crafts = recipes.filter(r => r.isCraft && completedHideout.includes(r.source));
+export async function getCraftsByHideoutModule(): Promise<Record<string, ProcessedRecipe[]>> {
+	const crafts = getRecipes().filter(r => r.isCraft && completedHideout.includes(r.source));
 	const craftsByHideout: Record<string, ProcessedRecipe[]> = {};
 	crafts.forEach((craft) => {
 		const processed: ProcessedRecipe = {
 			...craft,
-			productName: itemsById[craft.rewardItems[0].item.id].name,
-			fleaCost: craft.requiredItems.reduce((acc, ri) => acc + itemsById[ri.item.id].avg24hPrice * ri.quantity, 0),
-			fleaSell: craft.rewardItems.reduce((acc, ri) => acc + itemsById[ri.item.id].avg24hPrice * ri.quantity, 0),
+			productName: getItem(craft.rewardItems[0].item.id).name,
+			fleaCost: craft.requiredItems.reduce(
+        (acc, ri) => acc + getAndProcessItem(ri.item.id).buyValue * ri.quantity, 0),
+			fleaSell: craft.rewardItems.reduce(
+        (acc, ri) => acc + getAndProcessItem(ri.item.id).sellValue * ri.quantity, 0),
 			fleaSellFee: 0,
 			traderSell: 0,
 			traderName: "",
@@ -57,97 +37,35 @@ export async function getCraftsByHideoutModule(completedHideout: string[]): Prom
 	return craftsByHideout;
 };
 
-export async function ensureStaticDataLoaded() {
-	recipes = await ensureData('recipes', async () => {
-		const crafts: Craft[] = await getData('crafts', ['source', 'duration', `requiredItems ${containedItemQuery}`, `rewardItems ${containedItemQuery}`]);
-		const barters:Barter[] = await getData('barters', ['source', `requiredItems ${containedItemQuery}`, `rewardItems ${containedItemQuery}`]);
-
-		return crafts.map((c) => ({
-			...c,
-			isCraft: true,
-			lowestCost: 0,
-		}))
-		.concat(barters.map(b => ({
-			...b,
-			duration: 0,
-			isCraft: false,
-			lowestCost: 0,
-		})));
-	});
-
-	recipesByItemId = await ensureData('recipesByItemId', async () => {
-		const recipesByItemId: Record<string, Recipe[]> = {};
-		recipes.forEach((r, i) => {
-			r.rewardItems.forEach((ri) => {
-				if (!recipesByItemId.hasOwnProperty(ri.item.id)) {
-					recipesByItemId[ri.item.id] = [];
-				}
-
-				recipesByItemId[ri.item.id].push(r);
-			})
-		});
-		return recipesByItemId; 
-	});
+export function getAndProcessItem(id: string): ProcessedItem {
+  return processItem(getItem(id));
 }
 
-function processAllItems(items: Item[]) {
-	//let unprocessedItems = items;
-	const itemsById: Record<string, ProcessedItem> = {};
-	items.forEach(i => {
-		itemsById[i.id] = {...i, lowestValue: 0};
-	})
+export function processItem(item: Item):ProcessedItem {
+  if (processedItems[item.id]) {
+    return processedItems[item.id];
+  }
 
-	/* *
-	let lastCount = 0;
-	while (unprocessedItems.length > 0 && lastCount != unprocessedItems.length)
-	{
-		lastCount = unprocessedItems.length;
-		unprocessedItems = unprocessedItems.filter(ui => {
-			let lowestCost = 0;
-			let lowestRecipe = null;
-			if (recipesByItemId.hasOwnProperty(ui.id)) {
-				recipesByItemId[ui.id].forEach(recipe => {
-					if (recipe.lowestCost == 0) {
-						
-					}
-				});
-			}
+  const processed = {
+    ...item,
+    buyValue: 0,
+    sellValue: 0,
+  };
+  const buyValues = item.buyFor
+    .filter((buyFor) => buyFor.source != 'fleaMarket' && (buyFor.currency === 'RUB' || buyFor.currency === null))
+    .map(p => p.price);
+  buyValues.push((item.avg24hPrice + item.lastLowPrice)/2);
+  processed.buyValue = buyValues.sort((a, b) => a - b)[0];
 
-		});
-	}
-	/* */
+  const sellValues = [];
+  /* *
+  const sellValues = item.sellFor
+    .filter((sellFor) => sellFor.source != 'fleaMarket' && (sellFor.currency === 'RUB' || sellFor.currency === null))
+    .map(p => p.price);
+  /* */
+  sellValues.push((item.avg24hPrice + item.lastLowPrice)/2);
+  processed.sellValue = sellValues.sort((a, b) => b - a)[0];
 
-	return itemsById;
-}
-
-async function ensureData<T>(storageKey: string, dataRetrieval: () => Promise<T>): Promise<T> {
-	const cachedJson = localStorage.getItem(storageKey);
-	if (cachedJson) {
-		try {
-			return JSON.parse(cachedJson);
-		} catch (err) {
-			//noop
-		}
-	}
-
-	const data = await dataRetrieval();
-	localStorage.setItem(storageKey, JSON.stringify(data));
-	return data;
-}
-
-function getData(operation: string, fields: string[], queryParams: string = '') {
-	const paramSection = queryParams === '' ? '' : `(${queryParams})`;
-	const query = `{
-		${operation}${paramSection} {
-			${fields.join(' ')}
-		}
-	}`;
-	const url = API + '?query=' + encodeURI(query);
-	return axios.get(url, {
-		headers: {
-			"Content-Type": 'application/json'
-		}
-	}).then((response) => {
-		return response.data.data[operation]
-	});
-}
+  processedItems[item.id] = processed;
+  return processed;
+};

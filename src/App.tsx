@@ -1,13 +1,22 @@
+import { useEffect, useState } from 'react';
 import './App.css';
 import HideoutProfit from './HideoutProfit';
 import Meds from './Meds';
-import { cacheAllItemCosts, ensureStaticDataLoaded } from './services/tarkov-service';
-
-ensureStaticDataLoaded();
-cacheAllItemCosts();
-
+import { buildCache } from './services/tarkov-service';
 
 function App() {
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    buildCache()
+    .then(() => {
+      setIsLoaded(true);
+    });
+  })
+
+  if (!isLoaded) {
+    return <div>LOADING</div>;
+  }
 
   return (
     <div className="sections">

@@ -1,21 +1,19 @@
 import './hideout-profit.css';
 
 import { useEffect, useState } from 'react';
+import { ProcessedRecipe } from './types';
 import { getCraftsByHideoutModule } from './services/tarkov-service';
-import { getCompletedHideout } from './services/tarkov-tracker.service';
-import { ItemType, ProcessedRecipe } from './types';
 
 type CraftWithProfit = ProcessedRecipe & {
   fleaProfit: number;
 };
 
 function HideoutProfit() {
-  /* */
   const [craftsByHideout, setCraftsByHideout] = useState<Record<string, CraftWithProfit[]>>({});
 
   useEffect(() => {
     const fetchData = async () => {
-      const craftsByHideout = await getCraftsByHideoutModule(await getCompletedHideout());
+      const craftsByHideout = await getCraftsByHideoutModule();
       const processed:Record<string, any> = {};
       Object.keys(craftsByHideout) .forEach(key => {
         processed[key] = craftsByHideout[key]
@@ -29,7 +27,6 @@ function HideoutProfit() {
     fetchData()
       .catch(console.error);
   }, []);
-  /* */
 
   const headerClasses = "px-6 py-2";
   const cellClasses = "px-6 py-2";

@@ -1,4 +1,14 @@
 // API types
+export type ItemPrice = {
+	source: string;
+	price: number;
+	currency: string;
+	requirements: {
+		type: string;
+		value: number;
+	}[]
+};
+
 export type Item = {
 	id: string;
 	name: string;
@@ -7,14 +17,8 @@ export type Item = {
 	lastLowPrice: number;
 	low24hPrice: number;
 	avg24hPrice: number;
-	buyFor: {
-		source: string;
-		price: number;
-	}[]
-	sellFor: {
-		source: string;
-		price: number;
-	}[]
+	buyFor: ItemPrice[]
+	sellFor: ItemPrice[]
 }
 
 export enum ItemType {
@@ -48,9 +52,13 @@ export type Recipe = Craft & {
 	lowestCost: number;
 };
 
-export type ProcessedItem = Item & {
-	lowestValue: number;
-	lowestValueRecipe?: Recipe;
+export type ProcessedItem = {
+	id: string;
+	name: string;
+	shortName: string;
+	types: ItemType[];
+	buyValue: number;
+	sellValue: number;
 };
 
 export type ProcessedRecipe = Recipe & {

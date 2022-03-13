@@ -1,10 +1,11 @@
-import { getItemsByType } from './services/tarkov-service';
+import { getItemsByType } from './services/tarkov-tools.service';
 import { useEffect, useState } from 'react';
-import { Item, ItemType, MedConfig } from './types';
+import { ItemType, MedConfig, ProcessedItem } from './types';
 import medsJson from './data/meds.json';
+import { processItem } from './services/tarkov-service';
 
 const medsConfig: Record<string, MedConfig> = medsJson;
-type MedItem = MedConfig & Item;
+type MedItem = MedConfig & ProcessedItem;
 type MedItemAndCost = MedItem & {
   costPerHeal: number;
 };
@@ -22,7 +23,7 @@ function Meds() {
       const relevantMeds: MedItem[] = allMeds
         .filter(i => medsConfig[i.id])
         .map(i => ({
-          ...i,
+          ...processItem(i),
           ...medsConfig[i.id],
         }));
      
@@ -31,7 +32,7 @@ function Meds() {
         .filter(i => i.healsHealth)
         .map(i => ({
           ...i,
-          costPerHeal: (i.lastLowPrice / i.maxPoints)
+          costPerHeal: (i.buyValue / i.maxPoints)
         }))
         .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );
@@ -41,7 +42,7 @@ function Meds() {
         .filter(i => i.healsLightBleed)
         .map(i => ({
           ...i,
-          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.lightBleedPoints))
+          costPerHeal: (i.buyValue / (i.maxPoints/i.lightBleedPoints))
         }))
         .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );
@@ -51,7 +52,7 @@ function Meds() {
         .filter(i => i.healsHeavyBleed)
         .map(i => ({
           ...i,
-          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.heavyBleedPoints))
+          costPerHeal: (i.buyValue / (i.maxPoints/i.heavyBleedPoints))
         }))
         .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );
@@ -61,7 +62,7 @@ function Meds() {
         .filter(i => i.healsFracture)
         .map(i => ({
           ...i,
-          costPerHeal: (i.lastLowPrice / (i.maxPoints/i.fracturePoints))
+          costPerHeal: (i.buyValue / (i.maxPoints/i.fracturePoints))
         }))
         .sort((a, b) => a.costPerHeal - b.costPerHeal)
       );

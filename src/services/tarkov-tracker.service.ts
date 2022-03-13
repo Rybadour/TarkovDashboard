@@ -4,7 +4,6 @@ import hideoutConfig from '../data/hideout.json';
 const BASE_URL = 'https://tarkovtracker.io/api/v1/';
 const API_KEY = 'MxcfK3k1G46SXBUo8KutiL';
 
-
 export function getCompletedHideout() {
   return getData('progress')
   .then(data => {
@@ -14,7 +13,6 @@ export function getCompletedHideout() {
       .map(m => m.module + ' level ' + m.level);
   });
 }
-
 
 function getData(operation: string) {
 	const url = BASE_URL + operation;
