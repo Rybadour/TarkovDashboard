@@ -1,0 +1,194 @@
+{
+  "5448fee04bdc2dbc018b4567": {
+    "name": "0.6 liter water bottle",
+    "hydration": 60,
+    "energy": 0,
+    "quanity": 60
+  },
+  "5448ff904bdc2d6f028b456e": {
+    "name": "Army crackers",
+    "hydration": -5,
+    "energy": 10,
+    "quanity": 3
+  },
+  "544fb62a4bdc2dfb738b4568": {
+    "name": "Pack of Russian Army pineapple juice",
+    "hydration": 30,
+    "energy": 8,
+    "quanity": 1,
+    "energyPerSec": 0.2
+  },
+  "544fb6cc4bdc2d34748b456e": {
+    "name": "Slickers chocolate bar",
+    "hydration": -15,
+    "energy": 30,
+    "quanity": 1
+  },
+  "5673de654bdc2d180f8b456d": {
+    "name": "Can of pacific saury",
+    "hydration": -2,
+    "energy": 48,
+    "quanity": 1
+  },
+  "5734773724597737fd047c14": {
+    "name": "Can of condensed milk",
+    "hydration": -65,
+    "energy": 75,
+    "quanity": 1
+  },
+  "57347d3d245977448f7b7f61": {
+    "name": "Rye croutons",
+    "hydration": -10,
+    "energy": 20,
+    "quanity": 1
+  },
+  "57347d5f245977448b40fa81": {
+    "name": "Can of humpback salmon",
+    "hydration": -5,
+    "energy": 50,
+    "quanity": 1
+  },
+  "57347d692459774491567cf1": {
+    "name": "Can of green peas",
+    "hydration": 5,
+    "energy": 35,
+    "quanity": 1
+  },
+  "57347d7224597744596b4e72": {
+    "name": "Can of beef stew (Small)",
+    "hydration": -5,
+    "energy": 45,
+    "quanity": 1
+  },
+  "57347d8724597744596b4e76": {
+    "name": "Can of squash spread",
+    "hydration": 0,
+    "energy": 40,
+    "quanity": 1
+  },
+  "57347d90245977448f7b7f65": {
+    "name": "Pack of oat flakes",
+    "hydration": -13,
+    "energy": 40,
+    "quanity": 40
+  },
+  "57347d9c245977448b40fa85": {
+    "name": "Can of herring",
+    "hydration": -3,
+    "energy": 47,
+    "quanity": 1
+  },
+  "57347da92459774491567cf5": {
+    "name": "Can of beef stew (Large)",
+    "hydration": -5,
+    "energy": 50,
+    "quanity": 1
+  },
+  "57505f6224597709a92585a9": {
+    "name": "Alyonka chocolate bar",
+    "hydration": -15,
+    "energy": 35,
+    "quanity": 1
+  },
+  "575062b524597720a31c09a1": {
+    "name": "Can of Ice Green tea",
+    "hydration": 15,
+    "energy": 0,
+    "quanity": 1
+  },
+  "57513f07245977207e26a311": {
+    "name": "Pack of Apple juice",
+    "hydration": 25,
+    "energy": 5,
+    "quanity": 40
+  },
+  "57513f9324597720a7128161": {
+    "name": "Pack of Grand juice",
+    "hydration": 30,
+    "energy": 6,
+    "quanity": 40
+  },
+  "57513fcc24597720a31c09a6": {
+    "name": "Pack of Vita juice",
+    "hydration": 28,
+    "energy": 8,
+    "quanity": 40
+  },
+  "5751435d24597720a27126d1": {
+    "name": "Can of Max Energy energy drink",
+    "hydration": 20,
+    "energy": 12,
+    "quanity": 1
+  },
+  "57514643245977207f2c2d09": {
+    "name": "Can of TarCola soda",
+    "hydration": 15,
+    "energy": 5,
+    "quanity": 1,
+    "energyPerSec": 0.1
+  },
+  "575146b724597720a27126d5": {
+    "name": "Pack of milk",
+    "hydration": 30,
+    "energy": 20,
+    "quanity": 1
+  },
+  "5751487e245977207e26a315": {
+    "name": "Emelya rye croutons",
+    "hydration": -10,
+    "energy": 10,
+    "quanity": 1,
+    "hydrationPerSec": -0.2
+  },
+  "5751496424597720a27126da": {
+    "name": "Can of Hot Rod energy drink",
+    "hydration": 20,
+    "energy": 10,
+    "quanity": 1
+  },
+  "590c5d4b86f774784e1b9c45": {
+    "name": "Iskra ration pack",
+    "hydration": 0,
+    "energy": 80,
+    "quanity": 1
+  },
+  "590c5f0d86f77413997acfab": {
+    "name": "MRE ration pack",
+    "hydration": 0,
+    "energy": 70,
+    "quanity": 1,
+    "energyPerSec": 0.1,
+    "duration": 300 
+  },
+  "59e3577886f774176a362503": {
+    "name": "Pack of sugar",
+    "hydration": 0,
+    "energy": 80,
+    "quanity": 1
+  },
+  "5bc9c29cd4351e003562b8a3": {
+    "name": "Can of sprats",
+    "hydration": -5,
+    "energy": 55,
+    "quanity": 1
+  },
+  "5e8f3423fd7471236e6e3b64": {
+    "name": "Premium Kvass \"Norvinskiy Yadreniy\" 0.6L bottle",
+    "hydration": 65,
+    "energy": 15,
+    "quanity": 60
+  },
+  "60098b1705871270cd5352a1": {
+    "name": "Emergency Water Ration",
+    "hydration": 50,
+    "energy": 5,
+    "quanity": 1
+  },
+  "60b0f93284c20f0feb453da7": {
+    "name": "Can of RatCola",
+    "hydration": 20,
+    "energy": 20,
+    "quanity": 1,
+    "energyPerSec": 0.1
+  }
+}

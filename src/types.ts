@@ -25,6 +25,7 @@ export enum ItemType {
 	any = 'any',
 	meds = 'meds',
 	injectors = 'injectors',
+	provisions = 'provisions',
 };
 
 export type ContainedItem = {

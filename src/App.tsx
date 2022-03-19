@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Food from './Food';
 import HideoutProfit from './HideoutProfit';
 import Meds from './Meds';
 import { buildCache } from './services/tarkov-service';
@@ -21,6 +22,7 @@ function App() {
   return (
     <div className="sections">
       <Meds />
+      <Food />
       <HideoutProfit />
     </div>
   );
