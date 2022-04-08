@@ -17,7 +17,10 @@ function HideoutProfit() {
       const processed:Record<string, any> = {};
       Object.keys(craftsByHideout) .forEach(key => {
         processed[key] = craftsByHideout[key]
-          .map(c => ({...c, fleaProfit: c.fleaSell - c.fleaCost}))
+          .map(c => ({
+            ...c,
+            fleaProfit: (c.fleaSell - c.fleaCost - c.fleaSellFee) / (c.duration / 3600)
+          }))
           .sort((a, b) => b.fleaProfit - a.fleaProfit)
           .filter(c => c.fleaProfit > 0)
       });
@@ -44,15 +47,17 @@ function HideoutProfit() {
                 <th className={headerClasses}>Product</th>
                 <th className={headerClasses}>Flea Cost</th>
                 <th className={headerClasses}>Flea Sell</th>
-                <th className={headerClasses}>Flea Profit</th>
+                <th className={headerClasses}>Flea Fee</th>
+                <th className={headerClasses}>Flea Profit/h</th>
               </tr>
             </thead>
             <tbody>
             {craftsByHideout[hideout].map(c => 
-              <tr>
-                <td className={cellClasses}>{c.productName}</td>
+              <tr key={c.productId}>
+                <td className={cellClasses}>{c.productName + ": " + c.productId}</td>
                 <td className={cellClasses}>{c.fleaCost.toLocaleString()}</td>
                 <td className={cellClasses}>{c.fleaSell.toLocaleString()}</td>
+                <td className={cellClasses}>{c.fleaSellFee.toLocaleString()}</td>
                 <td className={cellClasses}>{c.fleaProfit.toLocaleString()}</td>
               </tr>
             )}

@@ -63,6 +63,7 @@ export type ProcessedItem = {
 };
 
 export type ProcessedRecipe = Recipe & {
+	productId: string;
 	productName: string;
 	fleaSell: number;
 	fleaSellFee: number;

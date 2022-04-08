@@ -1,6 +1,9 @@
 import { Item, ProcessedItem, ProcessedRecipe } from "../types";
 import { cacheAllItemCosts, ensureStaticDataLoaded, getItem, getRecipes } from "./tarkov-tools.service";
 import { getCompletedHideout } from "./tarkov-tracker.service";
+import fleaMarketJson from "../data/flea-market.json";
+
+const fleaMarket: Record<string, {fee: number}> = fleaMarketJson;
 
 let completedHideout: string[];
 
@@ -16,14 +19,16 @@ export async function getCraftsByHideoutModule(): Promise<Record<string, Process
 	const crafts = getRecipes().filter(r => r.isCraft && completedHideout.includes(r.source));
 	const craftsByHideout: Record<string, ProcessedRecipe[]> = {};
 	crafts.forEach((craft) => {
+    const productId = craft.rewardItems[0].item.id;
 		const processed: ProcessedRecipe = {
 			...craft,
-			productName: getItem(craft.rewardItems[0].item.id).name,
+      productId: productId,
+			productName: getItem(productId).name,
 			fleaCost: craft.requiredItems.reduce(
         (acc, ri) => acc + getAndProcessItem(ri.item.id).buyValue * ri.quantity, 0),
 			fleaSell: craft.rewardItems.reduce(
         (acc, ri) => acc + getAndProcessItem(ri.item.id).sellValue * ri.quantity, 0),
-			fleaSellFee: 0,
+			fleaSellFee: (fleaMarket[productId]?.fee ?? 0) * craft.rewardItems[0].quantity,
 			traderSell: 0,
 			traderName: "",
 		};
